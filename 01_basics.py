@@ -30,16 +30,16 @@ def create_jwt():
   token = {
       'iat': cur_time,
       'exp': cur_time + datetime.timedelta(minutes=60),
-      'aud': 'gweiss-demo-project'
+      'aud': '<GCP project ID>'
   }
 
-  with open('/home/pi/.ssh/sensehat_00_private.pem', 'r') as f:
+  with open('/home/pi/.ssh/<private_key>.pem', 'r') as f:
     private_key = f.read()
 
-  return jwt.encode(token, private_key, algorithm='RS256')
+  return jwt.encode(token, private_key, algorithm='RS256') # Assuming RSA, but also supports ECC
 
-_CLIENT_ID = 'projects/gweiss-demo-project/locations/us-central1/registries/sensehat-devices-test/devices/sensehat-00'
-_MQTT_TOPIC = '/devices/sensehat-00/events'
+_CLIENT_ID = 'projects/<project_name>/locations/<location>/registries/<registry_id>/devices/<device_name>'
+_MQTT_TOPIC = '/devices/<device_name>/events'
 
 client = mqtt.Client(client_id=_CLIENT_ID)
 # authorization is handled purely with JWT, no user/pass, so username can be whatever
@@ -59,7 +59,7 @@ def on_publish(unused_client, unused_userdata, unused_mid):
 client.on_connect = on_connect
 client.on_publish = on_publish
 
-client.tls_set(ca_certs='/home/pi/.ssh/roots.pem')
+client.tls_set(ca_certs='/home/pi/.ssh/roots.pem') # Replace this with 3rd party cert if that was used when creating registry
 client.connect('mqtt.googleapis.com', 8883)
 client.loop_start()
 
