@@ -22,7 +22,18 @@ import time
 import jwt
 import paho.mqtt.client as mqtt
 
-sense = SenseHat()
+
+# Define some project-based variables to be used below. This should be the only
+# block of variables that you need to edit in order to run this script
+
+ssl_private_key_filepath = '<path-to-ssl-key-with-name.pem>'
+root_cert_filepath = '<path-to-root-certificate-with-name>'
+project_id = '<GCP project ID>'
+gcp_location = '<GCP location>'
+registry_id = '<IoT Core registry id>'
+device_id = '<IoT Core device id>'
+
+# end of user-variables
 
 cur_time = datetime.datetime.utcnow()
 
@@ -30,16 +41,16 @@ def create_jwt():
   token = {
       'iat': cur_time,
       'exp': cur_time + datetime.timedelta(minutes=60),
-      'aud': '<GCP project ID>'
+      'aud': project_id
   }
 
-  with open('/home/pi/.ssh/<private_key>.pem', 'r') as f:
+  with open(ssl_private_key_filepath, 'r') as f:
     private_key = f.read()
 
   return jwt.encode(token, private_key, algorithm='RS256') # Assuming RSA, but also supports ECC
 
-_CLIENT_ID = 'projects/<project_name>/locations/<location>/registries/<registry_id>/devices/<device_name>'
-_MQTT_TOPIC = '/devices/<device_name>/events'
+_CLIENT_ID = 'projects/{}/locations/{}/registries/{}/devices/{}'.format(project_id, gcp_location, registry_id, device_id)
+_MQTT_TOPIC = '/devices/{}/events'.format(device_id)
 
 client = mqtt.Client(client_id=_CLIENT_ID)
 # authorization is handled purely with JWT, no user/pass, so username can be whatever
@@ -59,7 +70,7 @@ def on_publish(unused_client, unused_userdata, unused_mid):
 client.on_connect = on_connect
 client.on_publish = on_publish
 
-client.tls_set(ca_certs='/home/pi/.ssh/roots.pem') # Replace this with 3rd party cert if that was used when creating registry
+client.tls_set(ca_certs=root_cert_filepath) # Replace this with 3rd party cert if that was used when creating registry
 client.connect('mqtt.googleapis.com', 8883)
 client.loop_start()
 
@@ -67,6 +78,8 @@ client.loop_start()
 temperature = 0
 humidity = 0
 pressure = 0
+
+sense = SenseHat()
 
 for i in range(1, 11):
   cur_temp = sense.get_temperature()
