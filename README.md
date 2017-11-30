@@ -1,10 +1,13 @@
 ** This is not an official Google product **
 
 # Quick start guides
+
 The guides in this repo represent example code given to developers to help jumpstart their adoption of IoT Core in their systems.
 
-It has been and is used in conference talks, blogs and is intended as a step by step guide to getting IoT devices (specifically Raspberry PI) systems up and running on the Google Cloud Platform.
+### Raspberry Pi basics guide
 
-While my default hardware is Raspberry PI and an Adafruit Sense HAT, and code is Python, the logic should be helpful in illustrating all the pieces needed in order to get you up on your feet quickly.
-
-They are designed to be consumed in conjunction with the blog posts I've written explaining the pieces as they go, but are straightforward enough that they can likely be consumed without much further explanation.
+This is intended as a step by step guide to getting Raspberry Pi up and running sending messages to the Google Cloud Platform using IoT Core. Google Cloud Platform products used: **Cloud IoT Core, Cloud Pub/Sub**
+* [01_guide.html](https://github.com/GabeWeiss/IoT_Core_Quick_Starts/blob/master/01_guide.html)
+  + Step-by-step instructions to follow to get things running.
+* [01_basics.py](https://github.com/GabeWeiss/IoT_Core_Quick_Starts/blob/master/01_basics.py)
+  + Python code that will be run on device
