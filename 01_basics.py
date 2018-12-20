@@ -28,7 +28,7 @@ import paho.mqtt.client as mqtt
 
 ssl_private_key_filepath = '<ssl-private-key-filepath>'
 ssl_algorithm = '<algorithm>' # Either RS256 or ES256
-root_cert_filepath = '<root-certificate-filepath>''
+root_cert_filepath = '<root-certificate-filepath>'
 project_id = '<GCP project id>'
 gcp_location = '<GCP location>'
 registry_id = '<IoT Core registry id>'
