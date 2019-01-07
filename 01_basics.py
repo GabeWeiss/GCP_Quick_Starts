@@ -96,6 +96,8 @@ for i in range(1, 11):
   humidity = cur_humidity
 
   payload = '{{ "ts": {}, "temperature": {}, "pressure": {}, "humidity": {} }}'.format(int(time.time()), temperature, pressure, humidity)
+
+  # Uncomment following line when ready to publish
 #  client.publish(_MQTT_TOPIC, payload, qos=1)
 
   print("{}\n".format(payload))
