@@ -53,7 +53,7 @@ def create_jwt():
 _CLIENT_ID = 'projects/{}/locations/{}/registries/{}/devices/{}'.format(project_id, gcp_location, registry_id, device_id)
 _MQTT_TELEMETRY_TOPIC = '/devices/{}/events'.format(device_id)
 _MQTT_CONFIG_TOPIC = '/devices/{}/config'.format(device_id)
-_MQTT_COMMANDS_TOPIC = '/devices/{}/commands'.format(device_id)
+_MQTT_COMMANDS_TOPIC = '/devices/{}/commands/#'.format(device_id)
 
 client = mqtt.Client(client_id=_CLIENT_ID)
 # authorization is handled purely with JWT, no user/pass, so username can be whatever
