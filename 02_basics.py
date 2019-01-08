@@ -73,10 +73,15 @@ def on_connect(unusued_client, unused_userdata, unused_flags, rc):
 def on_publish(unused_client, unused_userdata, unused_mid):
     print('on_publish')
 
+# I have seen, occasionally, some noise come through that needs to be stripped out
+# This code ensures that it's stripped out properly
 def message_text(orig):
     print ('matching message text: {}'.format(orig))
     ma = re.match(r'^b\'(.*)\'$', orig)
-    return ma.group(1)
+    if ma == None:
+        return orig
+    else:
+        return ma.group(1)
 
 def truncate(f, n):
     '''Truncates/pads a float f to n decimal places without rounding'''
