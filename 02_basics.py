@@ -26,13 +26,13 @@ import re
 # Define some project-based variables to be used below. This should be the only
 # block of variables that you need to edit in order to run this script
 
-ssl_private_key_filepath = '/home/pi/.ssh/ec_private.pem'
-ssl_algorithm = 'ES256' # Either RS256 or ES256
-root_cert_filepath = '/home/pi/.ssh/roots.pem'
-project_id = 'gweiss-demo-project'
-gcp_location = 'us-central1'
-registry_id = 'demo'
-device_id = 'demo'
+ssl_private_key_filepath = '<ssl-private-key-filepath>'
+ssl_algorithm = '<algorithm>' # Either RS256 or ES256
+root_cert_filepath = '<root-certificate-filepath>'
+project_id = '<GCP project id>'
+gcp_location = '<GCP location>'
+registry_id = '<IoT Core registry id>'
+device_id = '<IoT Core device id>'
 
 # end of user-variables
 
@@ -48,10 +48,12 @@ def create_jwt():
   with open(ssl_private_key_filepath, 'r') as f:
     private_key = f.read()
 
-  return jwt.encode(token, private_key, ssl_algorithm) # Assuming RSA, but also supports ECC
+  return jwt.encode(token, private_key, ssl_algorithm)
 
 _CLIENT_ID = 'projects/{}/locations/{}/registries/{}/devices/{}'.format(project_id, gcp_location, registry_id, device_id)
-_MQTT_TOPIC = '/devices/{}/events'.format(device_id)
+_MQTT_TELEMETRY_TOPIC = '/devices/{}/events'.format(device_id)
+_MQTT_CONFIG_TOPIC = '/devices/{}/config'.format(device_id)
+_MQTT_COMMANDS_TOPIC = '/devices/{}/commands'.format(device_id)
 
 client = mqtt.Client(client_id=_CLIENT_ID)
 # authorization is handled purely with JWT, no user/pass, so username can be whatever
@@ -93,6 +95,9 @@ pC = [128,0,128]
 wC = [255,255,255]
 blC = [0,0,0]
 
+# Method which handles parsing the text message coming back from the Cloud
+# This is where you could add your own messages to play with different
+# actions based on messages coming back from the Cloud
 def respondToMsg(msg):
     if msg == "red":
         sense.clear(255,0,0)
@@ -119,65 +124,8 @@ def respondToMsg(msg):
 
 def on_message(unused_client, unused_userdata, message):
     payload = str(message.payload)
-    #print('Received message \'{}\' on topic \'{}\''.format(payload, message.topic))
+    print('Received message \'{}\' on topic \'{}\''.format(payload, message.topic))
     respondToMsg(message_text(payload))
-
-def joystick_right(event):
-    arrow = [
-    blC, blC, blC, blC, wC, blC, blC, blC,
-    blC, blC, blC, blC, blC, wC, blC, blC,
-    blC, blC, blC, blC, blC, blC, wC, blC,
-    wC, wC, wC, wC, wC, wC, wC, wC,
-    wC, wC, wC, wC, wC, wC, wC, wC,
-    blC, blC, blC, blC, blC, blC, wC, blC,
-    blC, blC, blC, blC, blC, wC, blC, blC,
-    blC, blC, blC, blC, wC, blC, blC, blC
-    ]
-    sense.set_pixels(arrow)
-def joystick_down(event):
-    arrow = [
-    blC, blC, blC, wC, wC, blC, blC, blC,
-    blC, blC, blC, wC, wC, blC, blC, blC,
-    blC, blC, blC, wC, wC, blC, blC, blC,
-    blC, blC, blC, wC, wC, blC, blC, blC,
-    wC, blC, blC, wC, wC, blC, blC, wC,
-    blC, wC, blC, wC, wC, blC, wC, blC,
-    blC, blC, wC, wC, wC, wC, blC, blC,
-    blC, blC, blC, wC, wC, blC, blC, blC
-    ]
-    sense.set_pixels(arrow)
-def joystick_left(event):
-    arrow = [
-    blC, blC, blC, wC, blC, blC, blC, blC,
-    blC, blC, wC, blC, blC, blC, blC, blC,
-    blC, wC, blC, blC, blC, blC, blC, blC,
-    wC, wC, wC, wC, wC, wC, wC, wC,
-    wC, wC, wC, wC, wC, wC, wC, wC,
-    blC, wC, blC, blC, blC, blC, blC, blC,
-    blC, blC, wC, blC, blC, blC, blC, blC,
-    blC, blC, blC, wC, blC, blC, blC, blC
-    ]
-    sense.set_pixels(arrow)
-def joystick_up(event):
-    arrow = [
-    blC, blC, blC, wC, wC, blC, blC, blC,
-    blC, blC, wC, wC, wC, wC, blC, blC,
-    blC, wC, blC, wC, wC, blC, wC, blC,
-    wC, blC, blC, wC, wC, blC, blC, wC,
-    blC, blC, blC, wC, wC, blC, blC, blC,
-    blC, blC, blC, wC, wC, blC, blC, blC,
-    blC, blC, blC, wC, wC, blC, blC, blC,
-    blC, blC, blC, wC, wC, blC, blC, blC,
-    ]
-    sense.set_pixels(arrow)
-def joystick_press(event):
-    sense.clear()
-
-sense.stick.direction_up = joystick_up
-sense.stick.direction_down = joystick_down
-sense.stick.direction_left = joystick_left
-sense.stick.direction_right = joystick_right
-sense.stick.direction_middle = joystick_press
 
 client.on_connect = on_connect
 client.on_publish = on_publish
@@ -185,7 +133,8 @@ client.on_message = on_message
 
 client.tls_set(ca_certs=root_cert_filepath) # Replace this with 3rd party cert if that was used when creating registry
 client.connect('mqtt.googleapis.com', 8883)
-client.subscribe('/devices/{}/config'.format(device_id), qos=1)
+client.subscribe(_MQTT_CONFIG_TOPIC, qos=1)
+client.subscribe(_MQTT_COMMANDS_TOPIC, qos=1)
 client.loop_start()
 
 # Could set this granularity to whatever we want based on device, monitoring needs, etc
@@ -208,11 +157,17 @@ for i in range(1, 6):
   humidity = cur_humidity
 
   payload = '{{ "ts": {}, "temperature": {}, "pressure": {}, "humidity": {} }}'.format(int(time.time()), temperature, pressure, humidity)
-  client.publish(_MQTT_TOPIC, payload, qos=1)
+
+  # Uncomment following line when ready to publish to IoT Core
+  #client.publish(_MQTT_TELEMETRY_TOPIC, payload, qos=1)
 
   print("{}\n".format(payload))
 
   time.sleep(1)
 
-#client.loop_stop()
+# This is sleeping for an arbitrarily long time because it has to be connected
+# in order to receive the command/config messages. Well, the config messages would
+# come through next time the device connected, but that's not as interesting
+# from a starting point
 time.sleep(999)
+client.loop_stop()
