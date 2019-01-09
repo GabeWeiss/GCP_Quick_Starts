@@ -11,5 +11,5 @@ This is intended as a step by step guide to getting Raspberry Pi up and running 
   + Step-by-step instructions to follow to get things running.
 * [01_basics.py](https://github.com/GabeWeiss/IoT_Core_Quick_Starts/blob/master/01_basics.py)
   + Python code that will be run on device
-* [01a_basics.py](https://github.com/GabeWeiss/IoT_Core_Quick_Starts/blob/master/01a_basics.py)
+* [02_basics.py](https://github.com/GabeWeiss/IoT_Core_Quick_Starts/blob/master/02_basics.py)
   + Python code that adds in the code to receive configurations and make the sense hat light up with pretty colors.
