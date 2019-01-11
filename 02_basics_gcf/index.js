@@ -52,13 +52,6 @@ exports.updateDevice = (req, res) => {
   // the full path to our device in GCP
   var devicePath = `projects/${projectId}/locations/us-central1/registries/${registryId}/devices/${deviceId}`;
 
-  // This is the blob send to the IoT Core Admin API
-  const configRequest = {
-    name: devicePath,
-    versionToUpdate: '0',
-    binaryData: msgData
-  };
-
   // This chunk is what authenticates the function with the API so you can
   // call the IoT Core APIs
   const jwtAccess = new google.auth.JWT();
@@ -73,16 +66,40 @@ exports.updateDevice = (req, res) => {
   // And here we have the actual call to the cloudiot REST API for updating a
   // configuration on the device
   var client = google.cloudiot('v1');
-  client.projects.locations.registries.devices.modifyCloudToDeviceConfig(configRequest,
-    (err, data) => {
-      if (err) {
-        console.log('Message: ', err);
-        console.log('Could not update config:', deviceId);
-      } else {
-        console.log('Success :', data);
+  if (which == "config") {
+    // This is the blob send to the IoT Core Admin API
+    const configRequest = {
+      name: devicePath,
+      versionToUpdate: '0',
+      binaryData: msgData
+    };
+    client.projects.locations.registries.devices.modifyCloudToDeviceConfig(configRequest,
+      (err, data) => {
+        if (err) {
+          console.log('Message: ', err);
+          console.log('Could not update config:', deviceId);
+        } else {
+          console.log('Success :', data);
+        }
       }
-    }
-  );
+    );
+  }
+  else if (which == "command") {
+    const commandRequest = {
+      name: devicePath,
+      binaryData: msgData
+    };
+    client.projects.locations.registries.devices.sendCommandToDevice(commandRequest,
+      (err, data) => {
+        if (err) {
+          console.log('Message: ', err);
+          console.log('Could not update command:', deviceId);
+        } else {
+          console.log('Success :', data);
+        }
+      }
+    );
+  }
 
   res.status(200).end();
 };
