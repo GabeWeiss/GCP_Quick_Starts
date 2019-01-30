@@ -23,6 +23,7 @@ var projectId = process.env.GCP_PROJECT;
 // in the GET call since I'm relying on that for the config/command switch
 // as well as the actual message being sent
 var registryId = '<registry_id>';
+var gcpLocation = '<project location>';
 var deviceId = '<device_id>';
 
 // a couple default values just for the sake of having something there
@@ -49,9 +50,6 @@ exports.updateDevice = (req, res) => {
   const finalMsg = reqMsg ? reqMsg : msg;
   const msgData = Buffer.from(finalMsg).toString('base64');
 
-  // the full path to our device in GCP
-  var devicePath = `projects/${projectId}/locations/us-central1/registries/${registryId}/devices/${deviceId}`;
-
   // This chunk is what authenticates the function with the API so you can
   // call the IoT Core APIs
   const jwtAccess = new google.auth.JWT();
@@ -62,6 +60,8 @@ exports.updateDevice = (req, res) => {
   // Set the default authenticatio nto the above JWT access
   google.options({ auth: jwtAccess });
 
+  // the full path to our device in GCP
+  var devicePath = `projects/${projectId}/locations/${gcpLocation}/registries/${registryId}/devices/${deviceId}`;
 
   // And here we have the actual call to the cloudiot REST API for updating a
   // configuration on the device
