@@ -55,7 +55,7 @@ exports.updateDevice = (req, res) => {
   // This chunk is what authenticates the function with the API so you can
   // call the IoT Core APIs
   const jwtAccess = new google.auth.JWT();
-  jwtAccesss.fromJSON(serviceAccount);
+  jwtAccess.fromJSON(serviceAccount);
   // Note that if you require additional scopes, they should be specified as a
   // string, separated by spaces
   jwtAccess.scopes = 'https://www.googleapis.com/auth/cloud-platform';
