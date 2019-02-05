@@ -63,10 +63,15 @@ exports.updateDevice = (req, res) => {
   // the full path to our device in GCP
   var devicePath = `projects/${projectId}/locations/${gcpLocation}/registries/${registryId}/devices/${deviceId}`;
 
+  // figure out if they're trying to send config vs command
+  // note the values of "which" that can be sent via the URL is "config" or "command"
+  const reqTypeMsg = req.query.which;
+  const finalWhich = reqTypeMsg ? reqTypeMsg : which;
+
   // And here we have the actual call to the cloudiot REST API for updating a
   // configuration on the device
   var client = google.cloudiot('v1');
-  if (which == "config") {
+  if (finalWhich == "config") {
     // This is the blob send to the IoT Core Admin API
     const configRequest = {
       name: devicePath,
@@ -84,7 +89,7 @@ exports.updateDevice = (req, res) => {
       }
     );
   }
-  else if (which == "command") {
+  else if (finalWhich == "command") {
     const commandRequest = {
       name: devicePath,
       binaryData: msgData

@@ -2,6 +2,6 @@
   "name": "message-to-device",
   "version": "1.0.0",
   "dependencies": {
-    "googleapis": "^31.0.2"
+    "googleapis": "^36.0.0"
   }
 }
