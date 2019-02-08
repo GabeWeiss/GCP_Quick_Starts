@@ -7,7 +7,6 @@ from googleapiclient import discovery
 from googleapiclient.errors import HttpError
 from google.auth import compute_engine
 
-
 #   Variable block. Should be the only pieces needing editing
 #
 #   Note, this is BAD for production, don't do this. The service account
@@ -25,8 +24,8 @@ device_id   = request_json['deviceId']
 
 # a couple default values for the config messages which will
 # reset the LED configurations as a default
-incoming_msg   = "clear"; // by default will reset the LED matrix
-which_msg_type = "config"; // by default will send a config message
+incoming_msg   = "clear"  # by default will reset the LED matrix
+which_msg_type = "config" # by default will send a config message
 
 # I'm putting these two variables outside the method only because there may
 # be a time that there are multiple versions and rest APIs for IoT Core, and
@@ -80,7 +79,6 @@ def update_device(request):
       return client.projects().locations().registries().devices().sendCommandToDevice(
                                                           name=device_name,
                                                           body=command_request).execute()
-      )
     elif which_msg_type == "config":
       config_request = {
         "name": device_name,
