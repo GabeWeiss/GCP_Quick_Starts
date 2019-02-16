@@ -88,7 +88,6 @@ def update_device(request):
       logging.info("Sending a command")
       command_request = {
         "name": device_name,
-        "versionToUpdate": '0',
         "binaryData": binary_data
       }
       return client.projects().locations().registries().devices().sendCommandToDevice(
@@ -97,6 +96,7 @@ def update_device(request):
     elif final_which == "config":
       config_request = {
         "name": device_name,
+        "versionToUpdate": '0',
         "binaryData": binary_data
       }
       logging.info("Sending a config")
