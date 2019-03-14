@@ -1,0 +1,7 @@
+{
+  "name": "message-to-device",
+  "version": "1.0.0",
+  "dependencies": {
+    "googleapis": "^36.0.0"
+  }
+}

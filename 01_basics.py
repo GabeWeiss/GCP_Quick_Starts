@@ -16,7 +16,7 @@
 
 #!/usr/bin/python
 
-#from sense_hat import SenseHat
+from sense_hat import SenseHat
 import datetime
 import time
 import jwt
@@ -48,7 +48,7 @@ def create_jwt():
   with open(ssl_private_key_filepath, 'r') as f:
     private_key = f.read()
 
-  return jwt.encode(token, private_key, algorithm='ES256') # Assuming RSA, but also supports ECC
+  return jwt.encode(token, private_key, ssl_algorithm)
 
 _CLIENT_ID = 'projects/{}/locations/{}/registries/{}/devices/{}'.format(project_id, gcp_location, registry_id, device_id)
 _MQTT_TOPIC = '/devices/{}/events'.format(device_id)
@@ -80,22 +80,24 @@ temperature = 0
 humidity = 0
 pressure = 0
 
-#sense = SenseHat()
+sense = SenseHat()
 
 for i in range(1, 11):
-#  cur_temp = sense.get_temperature()
-#  cur_pressure = sense.get_pressure()
-#  cur_humidity = sense.get_humidity()
+  cur_temp = sense.get_temperature()
+  cur_pressure = sense.get_pressure()
+  cur_humidity = sense.get_humidity()
 
-#  if cur_temp == temperature and cur_humidity == humidity and cur_pressure == pressure:
-#    time.sleep(1)
-#    continue
+  if cur_temp == temperature and cur_humidity == humidity and cur_pressure == pressure:
+    time.sleep(1)
+    continue
 
-#  temperature = cur_temp
-#  pressure = cur_pressure
-#  humidity = cur_humidity
+  temperature = cur_temp
+  pressure = cur_pressure
+  humidity = cur_humidity
 
   payload = '{{ "ts": {}, "temperature": {}, "pressure": {}, "humidity": {} }}'.format(int(time.time()), temperature, pressure, humidity)
+
+  # Uncomment following line when ready to publish
 #  client.publish(_MQTT_TOPIC, payload, qos=1)
 
   print("{}\n".format(payload))
