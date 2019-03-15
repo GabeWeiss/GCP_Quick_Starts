@@ -59,7 +59,8 @@ func main() {
 	client, clientErr := getClient()
 
 	if clientErr != nil {
-		fmt.Println("Failed to get auth'd client")
+		fmt.Println("Failed to get auth'd client: " + clientErr.Error())
+		return
 	}
 
 	_, configErr := setConfig(client, "gweiss-simple-path", "us-central1", "gweiss-simple-00", "gweiss-arduino-00", "clear")
