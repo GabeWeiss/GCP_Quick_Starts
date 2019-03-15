@@ -67,6 +67,8 @@ func main() {
 	if configErr != nil {
 		fmt.Println("Failed to configure something")
 		fmt.Printf("%s", configErr)
+	} else {
+		fmt.Println("I have successfully configured a device!")
 	}
 
 	fmt.Println("Hello world")
