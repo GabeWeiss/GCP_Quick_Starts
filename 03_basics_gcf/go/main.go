@@ -85,13 +85,16 @@ func main() {
 	client, clientErr := getClient()
 
 	if clientErr != nil {
-		fmt.Println("Failed to get auth'd client")
+		fmt.Println("Failed to get auth'd client: " + clientErr.Error())
+		return
 	}
 
 	_, configErr := setConfig(client)
 	if configErr != nil {
 		fmt.Println("Failed to configure something")
 		fmt.Printf("%s", configErr)
+	} else {
+		fmt.Println("I have successfully configured a device!")
 	}
 
 	fmt.Println("Hello world")
