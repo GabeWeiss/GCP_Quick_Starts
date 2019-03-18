@@ -23,6 +23,32 @@ import (
 	cloudiot "google.golang.org/api/cloudiot/v1"
 )
 
+/*
+  Variable block. Should be the only pieces needing editing
+*/
+
+// You shouldn't need to change this variable, it's here for illustration
+// purposes. An advantage of calling a Cloud Function within the same project
+// is that there are certain environment varibales you get for free like this
+// one
+var projectId = os.Getenv("GCP_PROJECT")
+
+// change the following to match your project's values
+// you could also easily modify the code to receieve these as variables
+// in the GET call since I'm relying on that for the config/command switch
+// as well as the actual message being sent
+var registryId = '<registry_id>'
+var gcpLocation = '<project location>'
+var deviceId = '<device_id>'
+
+// a couple default values just for the sake of having something there
+var msg = "clear" // by default will reset the LED matrix
+var which = "config" // by default will send a config message
+
+/*
+  END VARIABLE BLOCK
+*/
+
 // getClient returns a client based on the environment variable GOOGLE_APPLICATION_CREDENTIALS
 func getClient() (*cloudiot.Service, error) {
 	// Authorize the client using Application Default Credentials.
@@ -40,12 +66,12 @@ func getClient() (*cloudiot.Service, error) {
 	return client, nil
 }
 
-func setConfig(client *cloudiot.Service, projectID string, region string, registryID string, deviceID string, configData string) (*cloudiot.DeviceConfig, error) {
+func setConfig(client *cloudiot.Service) (*cloudiot.DeviceConfig, error) {
 	req := cloudiot.ModifyCloudToDeviceConfigRequest{
-		BinaryData: b64.StdEncoding.EncodeToString([]byte(configData)),
+		BinaryData: b64.StdEncoding.EncodeToString([]byte(msg)),
 	}
 
-	path := fmt.Sprintf("projects/%s/locations/%s/registries/%s/devices/%s", projectID, region, registryID, deviceID)
+	path := fmt.Sprintf("projects/%s/locations/%s/registries/%s/devices/%s", projectId, gcpLocation, registryId, deviceId)
 	response, err := client.Projects.Locations.Registries.Devices.ModifyCloudToDeviceConfig(path, &req).Do()
 	if err != nil {
 		return nil, err
@@ -62,7 +88,7 @@ func main() {
 		fmt.Println("Failed to get auth'd client")
 	}
 
-	_, configErr := setConfig(client, "gweiss-simple-path", "us-central1", "gweiss-simple-00", "gweiss-arduino-00", "clear")
+	_, configErr := setConfig(client)
 	if configErr != nil {
 		fmt.Println("Failed to configure something")
 		fmt.Printf("%s", configErr)
