@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package testblog03a
 
 import (
 	"context"
 	b64 "encoding/base64"
 	"fmt"
+	"net/http"
+	"os"
 
 	"golang.org/x/oauth2/google"
 	cloudiot "google.golang.org/api/cloudiot/v1"
@@ -31,18 +33,18 @@ import (
 // purposes. An advantage of calling a Cloud Function within the same project
 // is that there are certain environment varibales you get for free like this
 // one
-var projectId = os.Getenv("GCP_PROJECT")
+var projectID = os.Getenv("GCP_PROJECT")
 
 // change the following to match your project's values
 // you could also easily modify the code to receieve these as variables
 // in the GET call since I'm relying on that for the config/command switch
 // as well as the actual message being sent
-var registryId = '<registry_id>'
-var gcpLocation = '<project location>'
-var deviceId = '<device_id>'
+var registryID = "gweiss-simple-00"
+var gcpLocation = "us-central1"
+var deviceID = "gweiss-arduino-00"
 
 // a couple default values just for the sake of having something there
-var msg = "clear" // by default will reset the LED matrix
+var msg = "clear"    // by default will reset the LED matrix
 var which = "config" // by default will send a config message
 
 /*
@@ -71,7 +73,7 @@ func setConfig(client *cloudiot.Service) (*cloudiot.DeviceConfig, error) {
 		BinaryData: b64.StdEncoding.EncodeToString([]byte(msg)),
 	}
 
-	path := fmt.Sprintf("projects/%s/locations/%s/registries/%s/devices/%s", projectId, gcpLocation, registryId, deviceId)
+	path := fmt.Sprintf("projects/%s/locations/%s/registries/%s/devices/%s", projectID, gcpLocation, registryID, deviceID)
 	response, err := client.Projects.Locations.Registries.Devices.ModifyCloudToDeviceConfig(path, &req).Do()
 	if err != nil {
 		return nil, err
@@ -80,7 +82,8 @@ func setConfig(client *cloudiot.Service) (*cloudiot.DeviceConfig, error) {
 	return response, nil
 }
 
-func main() {
+// UpdateDevice entry point for the cloud function
+func UpdateDevice(w http.ResponseWriter, r *http.Request) {
 
 	client, clientErr := getClient()
 
@@ -98,4 +101,6 @@ func main() {
 	}
 
 	fmt.Println("Hello world")
+
+	w.Write("200")
 }
