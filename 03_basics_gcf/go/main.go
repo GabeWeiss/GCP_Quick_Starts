@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package testblog03a
+package main
 
 import (
 	"context"
 	b64 "encoding/base64"
 	"fmt"
-	"net/http"
-	"os"
 
 	"golang.org/x/oauth2/google"
 	cloudiot "google.golang.org/api/cloudiot/v1"
@@ -33,7 +31,7 @@ import (
 // purposes. An advantage of calling a Cloud Function within the same project
 // is that there are certain environment varibales you get for free like this
 // one
-var projectID = os.Getenv("GCP_PROJECT")
+var projectID = "gweiss-simple-path" // os.Getenv("GCP_PROJECT")
 
 // change the following to match your project's values
 // you could also easily modify the code to receieve these as variables
@@ -44,8 +42,8 @@ var gcpLocation = "us-central1"
 var deviceID = "gweiss-arduino-00"
 
 // a couple default values just for the sake of having something there
-var msg = "clear"    // by default will reset the LED matrix
-var which = "config" // by default will send a config message
+var msg = "clear"     // by default will reset the LED matrix
+var which = "command" // by default will send a config message
 
 /*
   END VARIABLE BLOCK
@@ -67,7 +65,6 @@ func getClient() (*cloudiot.Service, error) {
 
 	return client, nil
 }
-
 func setConfig(client *cloudiot.Service) (*cloudiot.DeviceConfig, error) {
 	req := cloudiot.ModifyCloudToDeviceConfigRequest{
 		BinaryData: b64.StdEncoding.EncodeToString([]byte(msg)),
@@ -82,8 +79,23 @@ func setConfig(client *cloudiot.Service) (*cloudiot.DeviceConfig, error) {
 	return response, nil
 }
 
-// UpdateDevice entry point for the cloud function
-func UpdateDevice(w http.ResponseWriter, r *http.Request) {
+// sendCommand sends a command to a device listening for commands.
+func sendCommand(client *cloudiot.Service) (*cloudiot.SendCommandToDeviceResponse, error) {
+	req := cloudiot.SendCommandToDeviceRequest{
+		BinaryData: b64.StdEncoding.EncodeToString([]byte(msg)),
+	}
+
+	path := fmt.Sprintf("projects/%s/locations/%s/registries/%s/devices/%s", projectID, gcpLocation, registryID, deviceID)
+	response, err := client.Projects.Locations.Registries.Devices.SendCommandToDevice(path, &req).Do()
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+// main entry point for the cloud function
+func main() {
 
 	client, clientErr := getClient()
 
@@ -92,15 +104,21 @@ func UpdateDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, configErr := setConfig(client)
-	if configErr != nil {
-		fmt.Println("Failed to configure something")
-		fmt.Printf("%s", configErr)
-	} else {
-		fmt.Println("I have successfully configured a device!")
+	if which == "config" {
+		_, configErr := setConfig(client)
+		if configErr != nil {
+			fmt.Println("Failed to configure something")
+			fmt.Printf("%s", configErr)
+		} else {
+			fmt.Println("I have successfully configured a device!")
+		}
+	} else if which == "command" {
+		_, commandErr := sendCommand(client)
+		if commandErr != nil {
+			fmt.Println("Failed to send command")
+			fmt.Printf("%s", commandErr)
+		} else {
+			fmt.Println("I have successfully sent a command!")
+		}
 	}
-
-	fmt.Println("Hello world")
-
-	w.Write("200")
 }

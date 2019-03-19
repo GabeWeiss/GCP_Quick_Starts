@@ -2,3 +2,4 @@
 .DS_Store
 service_account.json
 .gcloudignore
+go*
