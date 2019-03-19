@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package testblog03a
 
 import (
 	"context"
 	b64 "encoding/base64"
 	"fmt"
+	"net/http"
+	"os"
 
 	"golang.org/x/oauth2/google"
 	cloudiot "google.golang.org/api/cloudiot/v1"
@@ -31,19 +33,19 @@ import (
 // purposes. An advantage of calling a Cloud Function within the same project
 // is that there are certain environment varibales you get for free like this
 // one
-var projectID = "gweiss-simple-path" // os.Getenv("GCP_PROJECT")
+var projectID = os.Getenv("GCP_PROJECT")
 
 // change the following to match your project's values
 // you could also easily modify the code to receieve these as variables
 // in the GET call since I'm relying on that for the config/command switch
 // as well as the actual message being sent
-var registryID = "gweiss-simple-00"
-var gcpLocation = "us-central1"
-var deviceID = "gweiss-arduino-00"
+var registryID = "<registry_id>"
+var gcpLocation = "<project location>"
+var deviceID = "<device_id>"
 
 // a couple default values just for the sake of having something there
-var msg = "clear"     // by default will reset the LED matrix
-var which = "command" // by default will send a config message
+var msg = "clear"    // by default will reset the LED matrix
+var which = "config" // by default will send a config message
 
 /*
   END VARIABLE BLOCK
@@ -94,9 +96,21 @@ func sendCommand(client *cloudiot.Service) (*cloudiot.SendCommandToDeviceRespons
 	return response, nil
 }
 
-// main entry point for the cloud function
-func main() {
+// UpdateDevice entry point for the cloud function
+func UpdateDevice(w http.ResponseWriter, r *http.Request) {
+	// if a which variable was passed in the URL, update which mode we're in
+	reqWhich, ok := r.URL.Query()["which"]
+	if ok {
+		which = string(reqWhich[0])
+	}
 
+	// if a message variable was passed, update our msg variable to reflect it
+	reqMsg, ok := r.URL.Query()["message"]
+	if ok {
+		msg = string(reqMsg[0])
+	}
+
+	// this fetches our authorized client using the default credentials
 	client, clientErr := getClient()
 
 	if clientErr != nil {
@@ -109,16 +123,22 @@ func main() {
 		if configErr != nil {
 			fmt.Println("Failed to configure something")
 			fmt.Printf("%s", configErr)
+			fmt.Fprintf(w, "%d", 500)
 		} else {
 			fmt.Println("I have successfully configured a device!")
+			fmt.Fprintf(w, "%d", 200)
 		}
 	} else if which == "command" {
 		_, commandErr := sendCommand(client)
 		if commandErr != nil {
 			fmt.Println("Failed to send command")
 			fmt.Printf("%s", commandErr)
+			fmt.Fprintf(w, "%d", 500)
 		} else {
 			fmt.Println("I have successfully sent a command!")
+			fmt.Fprintf(w, "%d", 200)
 		}
+	} else {
+		fmt.Fprintf(w, "%d", 500)
 	}
 }
