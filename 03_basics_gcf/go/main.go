@@ -67,6 +67,9 @@ func getClient() (*cloudiot.Service, error) {
 
 	return client, nil
 }
+
+// setConfig configures a device. If the device is online it will get it immediately,
+// if not, it will fetch it upon next connection to IoT Core
 func setConfig(client *cloudiot.Service) (*cloudiot.DeviceConfig, error) {
 	req := cloudiot.ModifyCloudToDeviceConfigRequest{
 		BinaryData: b64.StdEncoding.EncodeToString([]byte(msg)),
@@ -81,7 +84,8 @@ func setConfig(client *cloudiot.Service) (*cloudiot.DeviceConfig, error) {
 	return response, nil
 }
 
-// sendCommand sends a command to a device listening for commands.
+// sendCommand sends a command to a device listening for commands. Command lost if
+// device isn't connected at time of send
 func sendCommand(client *cloudiot.Service) (*cloudiot.SendCommandToDeviceResponse, error) {
 	req := cloudiot.SendCommandToDeviceRequest{
 		BinaryData: b64.StdEncoding.EncodeToString([]byte(msg)),
@@ -98,6 +102,14 @@ func sendCommand(client *cloudiot.Service) (*cloudiot.SendCommandToDeviceRespons
 
 // UpdateDevice entry point for the cloud function
 func UpdateDevice(w http.ResponseWriter, r *http.Request) {
+
+	// this fetches our authorized client using the default credentials
+	client, clientErr := getClient()
+	if clientErr != nil {
+		fmt.Println("Failed to get auth'd client: " + clientErr.Error())
+		return
+	}
+
 	// if a which variable was passed in the URL, update which mode we're in
 	reqWhich, ok := r.URL.Query()["which"]
 	if ok {
@@ -110,14 +122,8 @@ func UpdateDevice(w http.ResponseWriter, r *http.Request) {
 		msg = string(reqMsg[0])
 	}
 
-	// this fetches our authorized client using the default credentials
-	client, clientErr := getClient()
-
-	if clientErr != nil {
-		fmt.Println("Failed to get auth'd client: " + clientErr.Error())
-		return
-	}
-
+	// switch on which method we got passed into the function (config/clear by default)
+	// sending back the proper response codes
 	if which == "config" {
 		_, configErr := setConfig(client)
 		if configErr != nil {
