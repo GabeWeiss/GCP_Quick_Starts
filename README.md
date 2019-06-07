@@ -20,3 +20,9 @@ This is intended as a step by step guide to getting Raspberry Pi up and running 
   + Google Cloud Function for issuing configuration and command messages back down to devices. GET variables provide the message to send, and the switch between config and command. The function in this folder is in Node.js.
 * [03_basics_gcf](https://github.com/GabeWeiss/IoT_Core_Quick_Starts/tree/master/03_basics_gcf)
   + Also Google Cloud Functions for issuing configuration and command messages back down to devices. GET variables provide the message to send, and the switch between config and command. These are in Python and Golang.
+
+### Cloud Products used in these tutorials
+
+* [Cloud IoT Core](https://bit.ly/2X6o5HN)
+* [Cloud Pub/Sub](https://bit.ly/2M3W96b)
+* [Cloud Functions](https://bit.ly/2M8xFZT)
